@@ -5,6 +5,7 @@ import os
 
 
 def system_tracerout(addr):
+    ip_host = socket.gethostbyname(addr)
     ans = []
     output = os.popen("tracert " + addr, "r")
     for line in output:
@@ -13,6 +14,7 @@ def system_tracerout(addr):
             if line[2].isdigit() or line[1].isdigit() or line[0].isdigit():
                 if line[-1] == "\n":
                     ans.append(line[-2].strip("[]"))
+    ans.append(ip_host)
     return ans
 
 
@@ -77,8 +79,7 @@ def whois(list_ip: list[str]) -> dict[str, dict[str, str]]:
             sock.sendall(f'{ip}\n'.encode("utf-8"))
 
             while True:
-                # utf-8 doesn't work here for some reason (on macOS) so I used ISO-8859-1 instead
-                buf = sock.recv(1024).decode("ISO-8859-1")
+                buf = sock.recv(1024).decode("latin-1")
                 ans += buf
                 if len(buf) == 0:
                     break
@@ -106,7 +107,6 @@ def main():
     table = prettytable.PrettyTable()
     table.field_names = ['IP', 'AS', 'Country', 'Description']
 
-    # trace = traceroute(args.dst_ip)
     trace = system_tracerout(args.dst_ip)
     w = whois(trace)
 
